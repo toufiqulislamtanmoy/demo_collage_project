@@ -80,13 +80,12 @@ export default function LoginPage() {
                 >
                   Password
                 </label>
-                <button
-                  type="button"
-                  onClick={() => router.push("/forgot-password")}
-                  className="text-sm text-primary hover:text-primary-focus font-medium cursor-pointer"
+                <Link
+                  href={"/forgot-password"}
+                  className="text-sm text-primary hover:text-primary-focus hover:underline font-medium cursor-pointer"
                 >
                   Forgot Password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
