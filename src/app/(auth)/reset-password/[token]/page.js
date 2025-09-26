@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import axiosClient from "@/utils/axiosClient";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -255,13 +256,12 @@ export default function ResetPasswordPage() {
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
               Remember your password?{" "}
-              <button
-                type="button"
-                onClick={() => router.push("/login")}
-                className="text-primary hover:text-primary-focus font-medium"
+              <Link
+                href="/login"
+                className="text-primary hover:text-primary-focus font-medium hover:underline"
               >
                 Back to login
-              </button>
+              </Link>
             </p>
           </div>
         </div>

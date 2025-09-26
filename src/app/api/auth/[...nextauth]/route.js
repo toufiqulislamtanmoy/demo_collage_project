@@ -47,6 +47,29 @@ export const authOptions = {
   ],
   session: { strategy: "jwt" },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account.provider !== "credentials") {
+        try {
+          const res = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/social-login`,
+            {
+              name: user.name,
+              email: user.email,
+              photo: user.image,
+              provider: account.provider,
+            }
+          );
+          return res.data?.status === "Success";
+        } catch (err) {
+          console.error(
+            "Social login failed:",
+            err.response?.data || err.message
+          );
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user._id;
