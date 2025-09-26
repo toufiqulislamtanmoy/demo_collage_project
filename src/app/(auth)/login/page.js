@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
@@ -32,7 +33,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl border border-gray-300 p-8">
+        <div className="bg-base rounded-2xl border border-gray-300 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
@@ -167,13 +168,12 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{" "}
-              <button
-                type="button"
-                onClick={() => router.push("/register")}
-                className="text-blue-600 hover:text-blue-500 font-medium"
+              <Link
+                href={"/register"}
+                className="text-primary hover:text-primary-focus hover:underline font-medium"
               >
                 Create account
-              </button>
+              </Link>
             </p>
           </div>
         </div>
