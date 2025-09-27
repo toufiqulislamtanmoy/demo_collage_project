@@ -8,6 +8,7 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(async (config) => {
   const session = await getSession();
+  console.log("axios client", session);
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
   }

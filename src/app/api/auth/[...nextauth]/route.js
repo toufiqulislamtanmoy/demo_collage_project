@@ -59,7 +59,12 @@ export const authOptions = {
               provider: account.provider,
             }
           );
-          return res.data?.status === "Success";
+          if (res.data?.status === "Success") {
+            const userData = res.data.data;
+            user.id = userData._id;
+            user.token = userData.token;
+            return true;
+          }
         } catch (err) {
           console.error(
             "Social login failed:",
@@ -71,18 +76,22 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, user }) {
+      console.log("user form auth route", user);
       if (user) {
         token.id = user._id;
         token.name = user.name;
         token.email = user.email;
+        token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
+      console.log("user form auth session", token);
       if (token) {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
+        session.accessToken = token.accessToken;
       }
       return session;
     },
