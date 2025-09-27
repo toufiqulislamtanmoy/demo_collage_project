@@ -8,8 +8,7 @@ import {
   Calendar,
   MapPin,
   Search,
-  Star,
-  Users,
+  Star
 } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
