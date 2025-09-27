@@ -260,6 +260,10 @@ function UniversitySearchResult({ university, onSelect }) {
                 <MapPin className="w-3 h-3" />
                 <span>{university?.location}</span>
               </div>
+              {/* <div className="flex items-center space-x-1">
+                <Users className="w-3 h-3" />
+                <span>{college.students.toLocaleString()} students</span>
+              </div> */}
             </div>
 
             <div className="flex items-center space-x-4 text-xs text-muted-foreground">
@@ -271,6 +275,7 @@ function UniversitySearchResult({ university, onSelect }) {
                   {moment(university?.admissionEnd).format("DD MMM YYYY")}
                 </span>
               </div>
+              {/* <span>Est. {college.established}</span> */}
             </div>
           </div>
         </div>
