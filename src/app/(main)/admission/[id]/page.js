@@ -126,23 +126,8 @@ const AdmissionFormPage = () => {
     return <Loader size="large" fullScreen text="Loading college details..." />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-2xl mb-4">
-            Error Loading College
-          </div>
-          <p className="text-muted-foreground">{error.message}</p>
-          <button
-            onClick={() => router.push("/admission")}
-            className="mt-4 px-6 py-2 bg-primary text-primary-content rounded-lg hover:bg-primary-focus transition-colors"
-          >
-            Back to Admissions
-          </button>
-        </div>
-      </div>
-    );
+    if (error) {
+    throw new Error(error.message || "Failed to fetch college details");
   }
 
   return (
