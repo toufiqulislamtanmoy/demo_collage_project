@@ -76,7 +76,6 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, user }) {
-      console.log("user form auth route", user);
       if (user) {
         token.id = user._id;
         token.name = user.name;
@@ -86,7 +85,6 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log("user form auth session", token);
       if (token) {
         session.user.id = token.id;
         session.user.name = token.name;
