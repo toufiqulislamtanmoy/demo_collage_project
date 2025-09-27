@@ -1,30 +1,27 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "@/utils/axiosClient";
 import Loader from "@/components/Common/Loader";
+import axiosClient from "@/utils/axiosClient";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Edit3,
-  Save,
-  X,
-  Camera,
-  Shield,
-  BookOpen,
-  GraduationCap,
-  Award,
-  Settings,
-  Globe,
-  Building,
-  CheckCircle,
-  ExternalLink,
+    Award,
+    Building,
+    Camera,
+    CheckCircle,
+    Edit3,
+    ExternalLink,
+    Globe,
+    Mail,
+    MapPin,
+    Save,
+    Settings,
+    Shield,
+    Upload,
+    User,
+    X
 } from "lucide-react";
-import { useState } from "react";
 import Image from "next/image";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const UserProfilePage = () => {
@@ -32,6 +29,7 @@ const UserProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef(null);
 
   const {
     register,
@@ -39,6 +37,7 @@ const UserProfilePage = () => {
     formState: { errors },
     reset,
     setValue,
+    trigger,
     watch,
   } = useForm({
     mode: "onChange",
@@ -61,10 +60,8 @@ const UserProfilePage = () => {
       reset({
         name: data.name || "",
         email: data.email || "",
-        phone: data.phone || "",
         address: data.address || "",
         university: data.university || "",
-        bio: data.bio || "",
       });
       if (data.photo) setPreviewImage(data.photo);
     },
@@ -73,12 +70,13 @@ const UserProfilePage = () => {
   // Update profile mutation
   const { mutate: updateProfile, isLoading: isUpdating } = useMutation({
     mutationFn: async (data) => {
-      const res = await axiosClient.put("/auth/update-profile", data);
+      const res = await axiosClient.patch("/auth/update-profile", data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["USER_PROFILE"]);
       setIsEditing(false);
+      setUploadError("");
       alert("Profile updated successfully!");
     },
     onError: (err) => {
@@ -119,7 +117,7 @@ const UserProfilePage = () => {
 
     // Validate file type and size
     if (!file.type.startsWith("image/")) {
-      setUploadError("Please select a valid image file");
+      setUploadError("Please select a valid image file (PNG, JPG, JPEG)");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -140,11 +138,26 @@ const UserProfilePage = () => {
     uploadAvatar(file);
   };
 
-  const onSubmit = (data) => {
+  const handleUploadClick = () => {
+    if (user?.provider === "google") {
+      alert(
+        "Google account users cannot change profile picture here. Please update your Google account profile."
+      );
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const onSubmit = async (data) => {
+    // Validate form before submission
+    const isValid = await trigger();
+    if (!isValid) return;
+
     // Don't allow email update for Google users
     if (user?.provider === "google") {
       delete data.email;
     }
+
     updateProfile(data);
   };
 
@@ -152,10 +165,8 @@ const UserProfilePage = () => {
     reset({
       name: user?.name || "",
       email: user?.email || "",
-      phone: user?.phone || "",
       address: user?.address || "",
       university: user?.university || "",
-      bio: user?.bio || "",
     });
     setIsEditing(false);
     setUploadError("");
@@ -207,8 +218,8 @@ const UserProfilePage = () => {
           <div className="lg:col-span-1 space-y-6">
             {/* Avatar Card */}
             <div className="bg-base rounded-2xl shadow-lg border border-border p-6 text-center">
-              <div className="relative inline-block">
-                <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-primary/20">
+              <div className="relative inline-block mb-4">
+                <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto border-4 border-primary/20">
                   <Image
                     src={previewImage || user?.photo || "/default-avatar.jpg"}
                     alt={user?.name}
@@ -216,15 +227,18 @@ const UserProfilePage = () => {
                     className="object-cover"
                   />
                   {isEditing && !isGoogleUser && (
-                    <label className="absolute inset-0 bg-foreground/50 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity rounded-full">
-                      <Camera className="w-6 h-6 text-primary-content" />
+                    <>
+                      <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity rounded-full">
+                        <Camera className="w-6 h-6 text-primary-content" />
+                      </div>
                       <input
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
                         className="hidden"
                       />
-                    </label>
+                    </>
                   )}
                 </div>
                 {isUploading && (
@@ -233,6 +247,18 @@ const UserProfilePage = () => {
                   </div>
                 )}
               </div>
+
+              {/* Upload Button - Always Visible when Editing */}
+              {isEditing && !isGoogleUser && (
+                <button
+                  onClick={handleUploadClick}
+                  disabled={isUploading}
+                  className="w-full mb-4 py-2 bg-secondary/10 text-secondary rounded-lg font-medium hover:bg-secondary/20 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>{isUploading ? "Uploading..." : "Change Photo"}</span>
+                </button>
+              )}
 
               <h2 className="text-2xl font-bold text-foreground mb-2">
                 {user?.name}
@@ -251,7 +277,7 @@ const UserProfilePage = () => {
                 <p className="text-red-500 text-sm mb-4">{uploadError}</p>
               )}
 
-              {/* Edit Button */}
+              {/* Edit/Save Buttons */}
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
@@ -363,20 +389,26 @@ const UserProfilePage = () => {
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-foreground">
                       <User className="w-4 h-4 text-primary" />
-                      <span>Full Name</span>
+                      <span>Full Name *</span>
                     </label>
                     {isEditing ? (
                       <>
                         <input
                           type="text"
                           {...register("name", {
-                            required: "Name is required",
+                            required: "Full name is required",
                             minLength: {
                               value: 2,
                               message: "Name must be at least 2 characters",
                             },
+                            maxLength: {
+                              value: 50,
+                              message: "Name must be less than 50 characters",
+                            },
                           })}
+                          defaultValue={user?.name}
                           className="w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                          placeholder="Enter your full name"
                         />
                         {errors.name && (
                           <p className="text-red-500 text-sm mt-1">
@@ -395,7 +427,7 @@ const UserProfilePage = () => {
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-foreground">
                       <Mail className="w-4 h-4 text-primary" />
-                      <span>Email Address</span>
+                      <span>Email Address *</span>
                       {isGoogleUser && (
                         <span className="text-xs text-blue-600 bg-blue-500/10 px-2 py-1 rounded">
                           Google
@@ -407,7 +439,9 @@ const UserProfilePage = () => {
                         <input
                           type="email"
                           {...register("email", {
-                            required: "Email is required",
+                            required: isGoogleUser
+                              ? false
+                              : "Email address is required",
                             pattern: {
                               value: /^\S+@\S+\.\S+$/,
                               message: "Enter a valid email address",
@@ -417,6 +451,7 @@ const UserProfilePage = () => {
                           className={`w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
                             isGoogleUser ? "opacity-50 cursor-not-allowed" : ""
                           }`}
+                          placeholder="your@email.com"
                         />
                         {isGoogleUser && (
                           <p className="text-xs text-blue-600 mt-1">
@@ -449,10 +484,22 @@ const UserProfilePage = () => {
                       <>
                         <input
                           type="text"
-                          {...register("university")}
-                          placeholder="Enter your university"
+                          {...register("university", {
+                            maxLength: {
+                              value: 100,
+                              message:
+                                "University name must be less than 100 characters",
+                            },
+                          })}
+                          placeholder="Enter your university name"
+                          defaultValue={user?.university || ""}
                           className="w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                         />
+                        {errors.university && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.university.message}
+                          </p>
+                        )}
                       </>
                     ) : (
                       <p className="px-4 py-3 text-foreground bg-muted/30 rounded-xl">
@@ -460,81 +507,39 @@ const UserProfilePage = () => {
                       </p>
                     )}
                   </div>
-
-                  {/* Phone */}
+                  {/* Address - Full Width */}
                   <div className="space-y-2">
                     <label className="flex items-center space-x-2 text-sm font-medium text-foreground">
-                      <Phone className="w-4 h-4 text-secondary" />
-                      <span>Phone Number</span>
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <span>Address</span>
                     </label>
                     {isEditing ? (
                       <>
                         <input
-                          type="tel"
-                          {...register("phone", {
-                            pattern: {
-                              value: /^[+]?[\d\s-()]{10,}$/,
-                              message: "Enter a valid phone number",
+                          type="text"
+                          {...register("address", {
+                            maxLength: {
+                              value: 200,
+                              message:
+                                "Address must be less than 200 characters",
                             },
                           })}
+                          placeholder="Enter your full address"
+                          defaultValue={user?.address || ""}
                           className="w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                         />
-                        {errors.phone && (
+                        {errors.address && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.phone.message}
+                            {errors.address.message}
                           </p>
                         )}
                       </>
                     ) : (
                       <p className="px-4 py-3 text-foreground bg-muted/30 rounded-xl">
-                        {user?.phone || "Not provided"}
+                        {user?.address || "Not provided"}
                       </p>
                     )}
                   </div>
-                </div>
-
-                {/* Address - Full Width */}
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-foreground">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span>Address</span>
-                  </label>
-                  {isEditing ? (
-                    <>
-                      <input
-                        type="text"
-                        {...register("address")}
-                        placeholder="Enter your address"
-                        className="w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                      />
-                    </>
-                  ) : (
-                    <p className="px-4 py-3 text-foreground bg-muted/30 rounded-xl">
-                      {user?.address || "Not provided"}
-                    </p>
-                  )}
-                </div>
-
-                {/* Bio - Full Width */}
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-foreground">
-                    <BookOpen className="w-4 h-4 text-secondary" />
-                    <span>Bio</span>
-                  </label>
-                  {isEditing ? (
-                    <>
-                      <textarea
-                        {...register("bio")}
-                        rows={3}
-                        placeholder="Tell us about yourself..."
-                        className="w-full px-4 py-3 border border-border rounded-xl bg-base focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
-                      />
-                    </>
-                  ) : (
-                    <p className="px-4 py-3 text-foreground bg-muted/30 rounded-xl">
-                      {user?.bio || "No bio added yet"}
-                    </p>
-                  )}
                 </div>
               </form>
             </div>
@@ -566,4 +571,3 @@ const UserProfilePage = () => {
 };
 
 export default UserProfilePage;
-    
