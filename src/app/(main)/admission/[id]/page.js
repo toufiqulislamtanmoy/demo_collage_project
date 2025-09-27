@@ -114,7 +114,7 @@ const AdmissionFormPage = () => {
       const res = await axiosClient.post("/admission/create", submissionData);
 
       alert(res.data.message || "Admission submitted successfully!");
-      router.push("/admission");
+      router.push("/my-college");
     } catch (err) {
       alert(err?.response?.data?.reason || "Failed to submit admission");
     } finally {
