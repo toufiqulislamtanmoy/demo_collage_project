@@ -1,24 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import axiosClient from "@/utils/axiosClient";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Search,
-  MapPin,
-  Calendar,
-  Users,
-  Star,
-  Award,
   ArrowRight,
+  Award,
+  Calendar,
+  MapPin,
+  Search,
+  Star,
+  Users,
 } from "lucide-react";
+import moment from "moment";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const dummyColleges = [
   {
     id: 1,
     name: "Harvard University",
     admissionDates: "Jan 10 - Mar 15",
-    image: "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image:
+      "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     events: ["Orientation", "Tech Fest", "Sports Day"],
     research: 25,
     sports: ["Basketball", "Football", "Swimming"],
@@ -31,7 +34,8 @@ const dummyColleges = [
     id: 2,
     name: "MIT",
     admissionDates: "Feb 1 - Apr 20",
-    image: "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image:
+      "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     events: ["Robotics Competition", "Hackathon"],
     research: 40,
     sports: ["Soccer", "Tennis", "Athletics"],
@@ -44,7 +48,8 @@ const dummyColleges = [
     id: 3,
     name: "Stanford University",
     admissionDates: "Jan 15 - Mar 30",
-    image: "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image:
+      "https://images.unsplash.com/20/cambridge.JPG?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     events: ["Startup Week", "Cultural Fest"],
     research: 30,
     sports: ["Basketball", "Baseball"],
@@ -59,10 +64,25 @@ const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  const filteredColleges = dummyColleges.filter(
-    (college) =>
-      college.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      college.location.toLowerCase().includes(searchQuery.toLowerCase())
+  const {
+    data: universityData = {},
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["UNIVERSITY_DATA"],
+    queryFn: async () => {
+      const res = await axiosClient.get("/universities");
+
+      if (res?.data?.status === "success") {
+        return res.data;
+      } else throw { ...res, message: res.data?.reason || "Request failed!" };
+    },
+  });
+  const filteredUniversities = universityData?.data?.filter(
+    (university) =>
+      university.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    university.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Close search results when clicking outside
@@ -94,11 +114,11 @@ const HeroSection = () => {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
             Find Your Perfect{" "}
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              College
+              University
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            Discover the best colleges and universities that match your dreams.
+            Discover the best universities and universities that match your dreams.
             Your educational journey starts here.
           </p>
 
@@ -106,7 +126,7 @@ const HeroSection = () => {
           <div className="flex justify-center items-center space-x-8 mb-12">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">500+</div>
-              <div className="text-muted-foreground">Colleges</div>
+              <div className="text-muted-foreground">Universities</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-secondary">50K+</div>
@@ -135,43 +155,45 @@ const HeroSection = () => {
             />
 
             {/* Search Results Dropdown */}
-            {isSearchFocused && searchQuery && filteredColleges.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-4 bg-base/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl overflow-hidden z-20 max-h-[400px] overflow-y-auto">
-                <div className="p-4 border-b border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground">
-                      Found {filteredColleges.length} college
-                      {filteredColleges.length !== 1 ? "s" : ""}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Matching "{searchQuery}"
-                    </span>
+            {isSearchFocused &&
+              searchQuery &&
+              filteredUniversities.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-4 bg-base/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl overflow-hidden z-20 max-h-[400px] overflow-y-auto">
+                  <div className="p-4 border-b border-border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-foreground">
+                        Found {filteredUniversities.length} university
+                        {filteredUniversities.length !== 1 ? "s" : ""}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Matching "{searchQuery}"
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-border">
+                    {filteredUniversities.map((university) => (
+                      <UniversitySearchResult
+                        key={university?._id}
+                        university={university}
+                        onSelect={() => setIsSearchFocused(false)}
+                      />
+                    ))}
                   </div>
                 </div>
-
-                <div className="divide-y divide-border">
-                  {filteredColleges.map((college) => (
-                    <CollegeSearchResult
-                      key={college.id}
-                      college={college}
-                      onSelect={() => setIsSearchFocused(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
             {/* No Results */}
             {isSearchFocused &&
               searchQuery &&
-              filteredColleges.length === 0 && (
+              filteredUniversities.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-4 bg-base/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-6 text-center z-[50] max-h-[520px]">
                   <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No colleges found
+                    No universities found
                   </h3>
                   <p className="text-muted-foreground">
-                    Try searching with different keywords or browse our college
+                    Try searching with different keywords or browse our university
                     directory.
                   </p>
                 </div>
@@ -182,17 +204,17 @@ const HeroSection = () => {
         {/* CTA Buttons */}
         <div className="flex lg:flex-row flex-col w-full gap-3 justify-center  mt-8">
           <Link
-            href="/colleges"
+            href="/universities"
             className="px-8 py-3 bg-primary text-primary-content rounded-xl font-semibold hover:bg-primary-focus transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-2"
           >
-            <span>Browse All Colleges</span>
+            <span>Browse All Universities</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/compare"
             className="px-8 py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-primary/5 transition-all duration-300 flex items-center space-x-2"
           >
-            <span>Compare Colleges</span>
+            <span>Compare Universities</span>
           </Link>
         </div>
       </div>
@@ -207,29 +229,29 @@ const HeroSection = () => {
   );
 };
 
-// College Search Result Component
-function CollegeSearchResult({ college, onSelect }) {
+// University Search Result Component
+function UniversitySearchResult({ university, onSelect }) {
   return (
-    <Link href={`/colleges/${college.id}`} onClick={onSelect}>
+    <Link href={`/colleges/${university._id}`} onClick={onSelect}>
       <div className="p-4 hover:bg-primary/5 transition-colors duration-200 cursor-pointer group">
         <div className="flex items-start space-x-4">
-          {/* College Image */}
+          {/* University Image */}
           <div className="relative w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl overflow-hidden flex-shrink-0">
             <div className="absolute inset-0 flex items-center justify-center">
               <Award className="w-8 h-8 text-primary" />
             </div>
           </div>
 
-          {/* College Info */}
+          {/* University Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                {college.name}
+                {university?.name}
               </h3>
               <div className="flex items-center space-x-1 bg-primary/10 px-2 py-1 rounded-full ml-2 flex-shrink-0">
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
                 <span className="text-xs font-semibold text-foreground">
-                  {college.rating}
+                  {university?.rating}
                 </span>
               </div>
             </div>
@@ -237,20 +259,19 @@ function CollegeSearchResult({ college, onSelect }) {
             <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
               <div className="flex items-center space-x-1">
                 <MapPin className="w-3 h-3" />
-                <span>{college.location}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Users className="w-3 h-3" />
-                <span>{college.students.toLocaleString()} students</span>
+                <span>{university?.location}</span>
               </div>
             </div>
 
             <div className="flex items-center space-x-4 text-xs text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-3 h-3" />
-                <span>Admission: {college.admissionDates}</span>
+                <span>
+                  Admission:{" "}
+                  {moment(university?.admissionStar).format("DD MMM YYYY")} to{" "}
+                  {moment(university?.admissionEnd).format("DD MMM YYYY")}
+                </span>
               </div>
-              <span>Est. {college.established}</span>
             </div>
           </div>
         </div>
