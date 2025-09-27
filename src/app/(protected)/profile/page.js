@@ -4,21 +4,21 @@ import Loader from "@/components/Common/Loader";
 import axiosClient from "@/utils/axiosClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-    Award,
-    Building,
-    Camera,
-    CheckCircle,
-    Edit3,
-    ExternalLink,
-    Globe,
-    Mail,
-    MapPin,
-    Save,
-    Settings,
-    Shield,
-    Upload,
-    User,
-    X
+  Award,
+  Building,
+  Camera,
+  CheckCircle,
+  Edit3,
+  ExternalLink,
+  Globe,
+  Mail,
+  MapPin,
+  Save,
+  Settings,
+  Shield,
+  Upload,
+  User,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
@@ -396,7 +396,6 @@ const UserProfilePage = () => {
                         <input
                           type="text"
                           {...register("name", {
-                            required: "Full name is required",
                             minLength: {
                               value: 2,
                               message: "Name must be at least 2 characters",
@@ -439,9 +438,6 @@ const UserProfilePage = () => {
                         <input
                           type="email"
                           {...register("email", {
-                            required: isGoogleUser
-                              ? false
-                              : "Email address is required",
                             pattern: {
                               value: /^\S+@\S+\.\S+$/,
                               message: "Enter a valid email address",
