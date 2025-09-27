@@ -8,7 +8,7 @@ import {
   Calendar,
   MapPin,
   Search,
-  Star
+  Star,
 } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
@@ -81,7 +81,7 @@ const HeroSection = () => {
   const filteredUniversities = universityData?.data?.filter(
     (university) =>
       university.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    university.location.toLowerCase().includes(searchQuery.toLowerCase())
+      university.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Close search results when clicking outside
@@ -117,8 +117,8 @@ const HeroSection = () => {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            Discover the best universities and universities that match your dreams.
-            Your educational journey starts here.
+            Discover the best universities and universities that match your
+            dreams. Your educational journey starts here.
           </p>
 
           {/* Stats */}
@@ -192,8 +192,8 @@ const HeroSection = () => {
                     No universities found
                   </h3>
                   <p className="text-muted-foreground">
-                    Try searching with different keywords or browse our university
-                    directory.
+                    Try searching with different keywords or browse our
+                    university directory.
                   </p>
                 </div>
               )}
@@ -260,10 +260,12 @@ function UniversitySearchResult({ university, onSelect }) {
                 <MapPin className="w-3 h-3" />
                 <span>{university?.location}</span>
               </div>
-              {/* <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1">
                 <Users className="w-3 h-3" />
-                <span>{college.students.toLocaleString()} students</span>
-              </div> */}
+                <span>
+                  {college.totalStudent.toLocaleString() || "0"} students
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center space-x-4 text-xs text-muted-foreground">
@@ -275,7 +277,7 @@ function UniversitySearchResult({ university, onSelect }) {
                   {moment(university?.admissionEnd).format("DD MMM YYYY")}
                 </span>
               </div>
-              {/* <span>Est. {college.established}</span> */}
+              <span>Est. {college?.established}</span>
             </div>
           </div>
         </div>

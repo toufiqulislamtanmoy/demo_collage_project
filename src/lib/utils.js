@@ -1,10 +1,4 @@
 import axiosClient from "@/utils/axiosClient";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
 
 export const uploadImage = async (file) => {
   if (!file) {
@@ -19,8 +13,8 @@ export const uploadImage = async (file) => {
 
   if (response?.data?.status === "Success") {
     const uploaded_url = response?.data?.data?.url;
-    return { uploaded_url: uploaded_url, status: "Success" };
+    return { uploaded_url: uploaded_url, status: "success" };
   } else {
-    return { uploaded_url: "", status: "Failed" };
+    return { uploaded_url: "", status: "failed" };
   }
 };
