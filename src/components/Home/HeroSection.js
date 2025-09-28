@@ -9,6 +9,7 @@ import {
   MapPin,
   Search,
   Star,
+  Users
 } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
@@ -72,6 +73,8 @@ const HeroSection = () => {
     queryKey: ["UNIVERSITY_DATA"],
     queryFn: async () => {
       const res = await axiosClient.get("/universities");
+      console.log("fetching university data",res);
+      
 
       if (res?.data?.status === "success") {
         return res.data;
@@ -156,13 +159,13 @@ const HeroSection = () => {
             {/* Search Results Dropdown */}
             {isSearchFocused &&
               searchQuery &&
-              filteredUniversities.length > 0 && (
+              filteredUniversities?.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-4 bg-base/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl overflow-hidden z-20 max-h-[400px] overflow-y-auto">
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-foreground">
-                        Found {filteredUniversities.length} university
-                        {filteredUniversities.length !== 1 ? "s" : ""}
+                        Found {filteredUniversities?.length} university
+                        {filteredUniversities?.length !== 1 ? "s" : ""}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         Matching "{searchQuery}"
@@ -263,7 +266,7 @@ function UniversitySearchResult({ university, onSelect }) {
               <div className="flex items-center space-x-1">
                 <Users className="w-3 h-3" />
                 <span>
-                  {college.totalStudent.toLocaleString() || "0"} students
+                  {university?.totalStudent?.toLocaleString() || "0"} students
                 </span>
               </div>
             </div>
@@ -277,7 +280,7 @@ function UniversitySearchResult({ university, onSelect }) {
                   {moment(university?.admissionEnd).format("DD MMM YYYY")}
                 </span>
               </div>
-              <span>Est. {college?.established}</span>
+              <span>Est. {moment(university?.established).format("YYYY")}</span>
             </div>
           </div>
         </div>

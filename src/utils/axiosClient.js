@@ -5,10 +5,10 @@ const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
+console.log("axios client-->", process.env.NEXT_PUBLIC_API_BASE_URL);
 
 axiosClient.interceptors.request.use(async (config) => {
   const session = await getSession();
-  console.log("axios client", session);
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
   }
